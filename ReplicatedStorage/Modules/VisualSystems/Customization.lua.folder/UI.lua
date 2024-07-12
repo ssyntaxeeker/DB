@@ -8,9 +8,12 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 
 local Modules = ReplicatedStorage:WaitForChild("Modules")
+local CustomizationAssets = ReplicatedStorage:WaitForChild("Assets"):WaitForChild("Customization")
 
 local GlobalModule = require(Modules:WaitForChild("Global"))
 local HookupModule = require(script.Hookups)
+
+local player = game.Players.LocalPlayer
 
 --local CustomizationCharacterModule = require(script.Parent.Character) -- TODO: Ask if this is, overall a good idea
 
@@ -19,6 +22,7 @@ local module = {}
 local defaultPositions = {
 	MainButton = UDim2.fromScale(0.913, 0.869),
 }
+local ViewportTemplate = script.ViewportTemplate
 
 local tweenFunctions = { -- TODO: Ask Dylan if I should cache this or something cause I'm making tweens every charAdd
 	Generic = function(Frame, Position, t) -- I know I'm supposed to do it on a per frame basis but this is just simpler
@@ -39,6 +43,44 @@ local tweenFunctions = { -- TODO: Ask Dylan if I should cache this or something 
 		Tween:Play()
 	end,--]]
 }
+
+local viewportFrames = {
+	Hair = function(Hairs)
+		
+	end,
+}
+
+local function setupViewportFrames(SelectionFrame)
+	local HairGrid = SelectionFrame:WaitForChild("HairGrid")
+	local HairGridCellSize = HairGrid.UIGridLayout.CellSize
+	
+	local dataNeeded = {
+		"Outfit",
+		"Hair", "Face",
+		"EyeColor", "SkinColor",
+		"Race",	"Gender",
+	}
+	
+	local customizationData = {}
+	
+	for _,data in dataNeeded do
+		customizationData[data] = player:GetAttribute(data)
+	end
+	
+	local Outfits = CustomizationAssets:WaitForChild("Outfits")	
+	
+	local playerSpecificAssets = 
+		CustomizationAssets:WaitForChild(customizationData.Race):WaitForChild(customizationData.Gender)
+	
+	local Faces = playerSpecificAssets.Faces:GetChildren()
+	local Hairs = playerSpecificAssets.Hairs:GetChildren()
+	
+	HairGrid.CanvasSize = UDim2.fromOffset(HairGridCellSize.X.Offset * #Hairs, HairGridCellSize.Y.Offset)
+	
+	for _, hair in Hairs:GetChildren() do
+		
+	end
+end
 
 local function load(player)
 	local PlayerGui = player.PlayerGui
@@ -82,6 +124,8 @@ local function load(player)
 			tween.Completed:Wait()
 		end--]]
 	end
+	
+	setupViewportFrames(CustomizationGUI:WaitForChild("MainFrame2"))
 	
 	HookupModule.rigUI(CustomizationGUI:WaitForChild("MainButton"), "MainButtonFrame")
 	
